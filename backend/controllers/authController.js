@@ -7,14 +7,12 @@ const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        // Check required fields
         if (!name || !email || !password) {
             return res.status(400).json({
                 message: "Name, email and password are required"
             });
         }
 
-        // Check if user already exists
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
@@ -23,10 +21,8 @@ const registerUser = async (req, res) => {
             });
         }
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user
         const user = await User.create({
             name,
             email,
@@ -52,19 +48,18 @@ const registerUser = async (req, res) => {
     }
 };
 
+
 // Login User
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Check required fields
         if (!email || !password) {
             return res.status(400).json({
                 message: "Email and password are required"
             });
         }
 
-        // Find user by email
         const user = await User.findOne({ email });
 
         if (!user) {
@@ -73,7 +68,6 @@ const loginUser = async (req, res) => {
             });
         }
 
-        // Compare password
         const isPasswordValid = await bcrypt.compare(
             password,
             user.password
@@ -85,19 +79,17 @@ const loginUser = async (req, res) => {
             });
         }
 
-        // Generate JWT token
-            const token = jwt.sign(
-         {
-            id: user._id,
-            role: user.role
-         },
-        process.env.JWT_SECRET,
-        {
-        expiresIn: "1d"
-        }
-    );
+        const token = jwt.sign(
+            {
+                id: user._id,
+                role: user.role
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "1d"
+            }
+        );
 
-        // Login successful
         res.status(200).json({
             message: "Login successful",
             token,
@@ -118,7 +110,168 @@ const loginUser = async (req, res) => {
     }
 };
 
+
+// Get All Applicants - Admin Only
+const getApplicants = async (req, res) => {
+    try {
+        const applicants = await User.find(
+            { role: "applicant" },
+            "-password"
+        ).sort({ createdAt: -1 });
+
+        res.status(200).json({
+            message: "Applicants fetched successfully",
+            count: applicants.length,
+            applicants
+        });
+
+    } catch (error) {
+        console.error("Get applicants error:", error.message);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
+
+
+// Get Applicant By ID - Admin Only
+const getApplicantById = async (req, res) => {
+    try {
+        const applicant = await User.findOne({
+            _id: req.params.id,
+            role: "applicant"
+        }).select("-password");
+
+        if (!applicant) {
+            return res.status(404).json({
+                message: "Applicant not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Applicant fetched successfully",
+            applicant
+        });
+
+    } catch (error) {
+        console.error("Get applicant by ID error:", error.message);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
+
+
+// Get Logged-in Applicant Profile
+const getMyProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("-password");
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Profile fetched successfully",
+            user
+        });
+
+    } catch (error) {
+        console.error("Get my profile error:", error.message);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
+
+
+// Update Logged-in Applicant Profile
+const updateMyProfile = async (req, res) => {
+    try {
+        const {
+            name,
+            phone,
+            location,
+            education,
+            experience,
+            skills
+        } = req.body;
+
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        if (name !== undefined) user.name = name;
+        if (phone !== undefined) user.phone = phone;
+        if (location !== undefined) user.location = location;
+
+        // FormData se education string me aata hai
+        if (education !== undefined) {
+            user.education =
+                typeof education === "string"
+                    ? JSON.parse(education)
+                    : education;
+        }
+
+        if (experience !== undefined) {
+            user.experience = experience;
+        }
+
+        // FormData se skills bhi string me aata hai
+        if (skills !== undefined) {
+            user.skills =
+                typeof skills === "string"
+                    ? JSON.parse(skills)
+                    : skills;
+        }
+
+        // Actual uploaded resume
+        if (req.file) {
+            user.resume = req.file.filename;
+        }
+
+        await user.save();
+
+        res.status(200).json({
+            message: "Profile updated successfully",
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                phone: user.phone,
+                location: user.location,
+                education: user.education,
+                experience: user.experience,
+                skills: user.skills,
+                resume: user.resume
+            }
+        });
+
+    } catch (error) {
+        console.error("Update profile error:", error.message);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
+
+
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    getApplicants,
+    getApplicantById,
+    getMyProfile,
+    updateMyProfile
 };

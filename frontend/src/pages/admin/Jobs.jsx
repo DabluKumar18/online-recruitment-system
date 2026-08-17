@@ -18,19 +18,41 @@ export default function AdminJobs() {
   const [deleting, setDeleting] = useState(false);
 
   const load = async () => {
+  try {
     setLoading(true);
-    const [allJobs, allApps] = await Promise.all([getJobs(), getApplications()]);
+
+    const [allJobs, allApps] = await Promise.all([
+      getJobs(),
+      getApplications()
+    ]);
+
     setJobs(allJobs);
+
     const counts = {};
-    allApps.forEach((a) => { counts[a.jobId] = (counts[a.jobId] || 0) + 1; });
+    allApps.forEach((a) => {
+      if (a.jobId) {
+        counts[a.jobId] = (counts[a.jobId] || 0) + 1;
+    }
+  });
+
     setAppCounts(counts);
+  } catch (error) {
+    console.error("Load jobs error:", error);
+
+    showToast(
+      error.message || "Failed to load jobs.",
+      "error"
+    );
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   useEffect(() => { load(); }, []);
 
   const filtered = jobs.filter(
-    (j) => j.title.toLowerCase().includes(search.toLowerCase()) || j.company.toLowerCase().includes(search.toLowerCase())
+    (j) => j.title.toLowerCase().includes(search.toLowerCase()) || 
+    j.company.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleDelete = async () => {

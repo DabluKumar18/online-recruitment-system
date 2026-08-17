@@ -17,24 +17,46 @@ export default function ApplicantDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
-      const [apps, allJobs] = await Promise.all([getApplications({ applicantId: currentUser.id }), getJobs()]);
+  async function load() {
+    try {
+      setLoading(true);
+
+      const [apps, allJobs] = await Promise.all([
+        getApplications({ applicantId: currentUser.id }),
+        getJobs()
+      ]);
+
       setApplications(apps);
+
       const map = {};
-      allJobs.forEach((j) => (map[j.id] = j));
+      allJobs.forEach((j) => {
+        map[j.id] = j;
+      });
+
       setJobsById(map);
       setRecommended(allJobs.slice(0, 3));
+    } catch (error) {
+      console.error("Applicant dashboard error:", error);
+    } finally {
       setLoading(false);
     }
-    load();
-  }, [currentUser.id]);
+  }
+
+  load();
+}, [currentUser.id]);
 
   const stats = {
-    submitted: applications.length,
-    underReview: applications.filter((a) => a.status === "Under Review").length,
-    shortlisted: applications.filter((a) => a.status === "Shortlisted").length,
-    selected: applications.filter((a) => a.status === "Selected").length,
-  };
+  submitted: applications.length,
+  underReview: applications.filter(
+    (a) => a.status === "Pending"
+  ).length,
+  shortlisted: applications.filter(
+    (a) => a.status === "Shortlisted"
+  ).length,
+  selected: applications.filter(
+    (a) => a.status === "Selected"
+  ).length,
+};
 
   return (
     <div className="container-page py-10">

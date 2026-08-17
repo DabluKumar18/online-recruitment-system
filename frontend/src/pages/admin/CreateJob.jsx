@@ -9,10 +9,25 @@ export default function CreateJob() {
   const { showToast } = useApp();
 
   const handleSubmit = async (payload) => {
+  try {
     const job = await createJob(payload);
-    showToast(payload.status === "Draft" ? `"${job.title}" saved as draft.` : `"${job.title}" published successfully.`);
+
+    showToast(
+      payload.status === "Draft"
+        ? `"${job.title}" saved as draft.`
+        : `"${job.title}" published successfully.`
+    );
+
     navigate("/admin/jobs");
-  };
+  } catch (error) {
+    console.error("Create job error:", error);
+
+    showToast(
+      error.message || "Failed to create job.",
+      "error"
+    );
+  }
+};
 
   return (
     <div className="max-w-3xl">

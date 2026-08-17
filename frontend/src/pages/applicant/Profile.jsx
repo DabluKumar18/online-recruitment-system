@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { UploadCloud, FileText, Save } from "lucide-react";
 import FormField from "../../components/FormField";
-import { getApplicantById, updateApplicantProfile } from "../../services/api";
+import {
+  getMyProfile,
+  updateApplicantProfile
+} from "../../services/api";
 import { useApp } from "../../context/AppContext";
 
 const emptyProfile = {
@@ -19,13 +22,27 @@ export default function ApplicantProfile() {
   const [resumeFile, setResumeFile] = useState(null);
 
   useEffect(() => {
-    getApplicantById(currentUser.id).then((data) => {
-      const merged = { ...emptyProfile, ...data, education: { ...emptyProfile.education, ...data?.education } };
+  getMyProfile()
+    .then((data) => {
+      const merged = {
+        ...emptyProfile,
+        ...data,
+        education: {
+          ...emptyProfile.education,
+          ...data?.education
+        }
+      };
+
       setProfile(merged);
       setSkillsInput((merged.skills || []).join(", "));
       setLoading(false);
+    })
+    .catch((err) => {
+      console.error("Profile load error:", err);
+      showToast(err.message || "Could not load profile.", "error");
+      setLoading(false);
     });
-  }, [currentUser.id]);
+}, []);
 
   const update = (key, value) => setProfile((p) => ({ ...p, [key]: value }));
   const updateEducation = (key, value) => setProfile((p) => ({ ...p, education: { ...p.education, [key]: value } }));
@@ -39,9 +56,15 @@ export default function ApplicantProfile() {
         skills: skillsInput.split(",").map((s) => s.trim()).filter(Boolean),
         resume: resumeFile ? resumeFile.name : profile.resume,
       };
-      await updateApplicantProfile(currentUser.id, updates);
-      setProfile(updates);
-      showToast("Profile updated successfully.");
+      await updateApplicantProfile(
+        currentUser.id,
+        updates,
+        resumeFile
+      );
+
+       setProfile(updates);
+
+       showToast("Profile updated successfully.");
     } catch (err) {
       showToast(err.message || "Could not save profile.", "error");
     } finally {

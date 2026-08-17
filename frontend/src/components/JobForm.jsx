@@ -3,7 +3,7 @@ import FormField from "./FormField";
 import { jobTypes, experienceLevels, workModes, categories } from "../data/jobs";
 
 const emptyForm = {
-  title: "", company: "", location: "", type: "Full Time", workMode: "On-site",
+  title: "", company: "", location: "", type: "Full-time", workMode: "On-site",
   category: "Software Development", experience: "Entry Level", salary: "",
   openings: "1", deadline: "", description: "", responsibilities: "",
   skills: "", qualifications: "", benefits: "",
@@ -45,14 +45,21 @@ export default function JobForm({ initialJob, onSubmit, submitLabel = "Publish J
   };
 
   const buildPayload = (status) => ({
-    ...form,
-    status,
-    openings: Number(form.openings) || 1,
-    responsibilities: fromMultiline(form.responsibilities),
-    qualifications: fromMultiline(form.qualifications),
-    benefits: fromMultiline(form.benefits),
-    skills: fromCsv(form.skills),
-  });
+  ...form,
+  status,
+  openings: Number(form.openings) || 1,
+  responsibilities: fromMultiline(form.responsibilities),
+  qualifications: fromMultiline(form.qualifications),
+  benefits: fromMultiline(form.benefits),
+  skills: fromCsv(form.skills),
+
+  jobType:
+    form.type === "Full Time"
+      ? "Full-time"
+      : form.type === "Part Time"
+      ? "Part-time"
+      : form.type,
+});
 
   const handlePublish = async (e) => {
     e.preventDefault();

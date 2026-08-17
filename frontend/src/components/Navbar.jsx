@@ -42,6 +42,15 @@ export default function Navbar() {
               >
                 <LayoutDashboard size={15} /> Dashboard
               </Link>
+              
+              {isApplicant && (
+                <Link
+                   to="/applicant/profile"
+                   className="btn-secondary btn-sm"
+                >
+                   <User size={15} /> Profile
+                </Link>
+              )}
               <div className="flex items-center gap-2 pl-3 border-l border-ink-200">
                 <span className="h-8 w-8 rounded-full bg-ink-100 flex items-center justify-center text-xs font-semibold text-ink-600">
                   {currentUser?.fullName?.slice(0, 1)}

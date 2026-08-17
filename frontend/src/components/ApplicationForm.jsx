@@ -66,15 +66,15 @@ export default function ApplicationForm({ job, open, onClose, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+    console.log("Applying for Job ID:", job.id);
     setSubmitting(true);
     try {
       await submitApplication({
-        applicantId: currentUser.id,
-        jobId: job.id,
-        ...form,
-        skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
-        resumeFileName: resumeFile.name,
-      });
+       applicantId: currentUser.id,
+       jobId: job.id,
+       resume: resumeFile.name,
+       coverLetter: form.coverLetter,
+  });
       showToast(`Application submitted for ${job.title} at ${job.company}.`);
       onSuccess?.();
     } catch (err) {

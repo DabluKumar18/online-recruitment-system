@@ -85,13 +85,33 @@ export default function Login() {
         </div>
 
         <div className="mt-5 flex items-start gap-2 text-xs text-ink-500 bg-ink-100 rounded-lg px-3.5 py-3">
-          <Info size={14} className="shrink-0 mt-0.5" />
-          <div>
-            <p className="font-medium text-ink-700 mb-1">Demo credentials</p>
-            <p>Applicant: applicant@example.com / 123456</p>
-            <p>Admin: use the <Link to="/admin/login" className="underline">Admin Login</Link> page</p>
-          </div>
-        </div>
+  <Info size={14} className="shrink-0 mt-0.5" />
+
+  <div>
+    <p className="font-medium text-ink-700 mb-1">
+      Applicant Login
+    </p>
+
+    <p>
+      Email: dablu.test@gmail.com
+    </p>
+
+    <p>
+      Password: 12345678
+    </p>
+
+    <p className="mt-1">
+      Admin: use the{" "}
+      <Link
+        to="/admin/login"
+        className="underline"
+      >
+        Admin Login
+      </Link>{" "}
+      page
+    </p>
+  </div>
+</div>
       </div>
 
       {showForgot && (

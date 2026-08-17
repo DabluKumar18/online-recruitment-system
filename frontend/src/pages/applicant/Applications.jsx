@@ -14,14 +14,51 @@ export default function ApplicantApplications() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
-      const apps = await getApplications({ applicantId: currentUser.id });
-      const withJobs = await Promise.all(apps.map(async (a) => ({ ...a, job: await getJobById(a.jobId) })));
+  async function load() {
+    try {
+      setLoading(true);
+
+      const apps = await getApplications({
+        applicantId: currentUser.id,
+      });
+
+      const withJobs = await Promise.all(
+        apps.map(async (a) => {
+          if (!a.jobId) {
+            return {
+              ...a,
+              job: null,
+            };
+          }
+
+          try {
+            const job = await getJobById(a.jobId);
+
+            return {
+              ...a,
+              job,
+            };
+          } catch (error) {
+            console.error("Failed to load job:", a.jobId, error);
+
+            return {
+              ...a,
+              job: null,
+            };
+          }
+        })
+      );
+
       setRows(withJobs);
+    } catch (error) {
+      console.error("Load applications error:", error);
+    } finally {
       setLoading(false);
     }
-    load();
-  }, [currentUser.id]);
+  }
+
+  load();
+}, [currentUser.id]);
 
   return (
     <div className="container-page py-10">
