@@ -14,14 +14,37 @@ export default function ApplicantDetails() {
   const [jobsById, setJobsById] = useState({});
 
   useEffect(() => {
-    async function load() {
-      const [a, apps, jobs] = await Promise.all([getApplicantById(id), getApplications({ applicantId: id }), getJobs()]);
+  async function load() {
+    try {
+      const [a, allApps, jobs] = await Promise.all([
+        getApplicantById(id),
+        getApplications(),
+        getJobs()
+      ]);
+
       setApplicant(a);
-      setApplications(apps);
-      setJobsById(Object.fromEntries(jobs.map((j) => [j.id, j])));
+
+      // Admin ko saare applications milenge,
+      // hum sirf current applicant ke applications rakhenge
+      const applicantApps = allApps.filter(
+        (app) => app.applicantId === id
+      );
+
+      setApplications(applicantApps);
+
+      setJobsById(
+        Object.fromEntries(
+          jobs.map((j) => [j.id, j])
+        )
+      );
+    } catch (error) {
+      console.error("Applicant details error:", error);
+      showToast(error.message || "Failed to load applicant.", "error");
     }
-    load();
-  }, [id]);
+  }
+
+  load();
+}, [id]);
 
   if (applicant === undefined) return <div className="py-16 text-center text-ink-400">Loading applicant…</div>;
   if (applicant === null) return <div className="py-16 text-center text-ink-400">Applicant not found.</div>;
@@ -68,13 +91,22 @@ export default function ApplicantDetails() {
 
       <div className="card p-6 mb-6">
         <h2 className="font-semibold text-ink-900 mb-3 flex items-center gap-2"><FileText size={17} className="text-brand-600" /> Resume</h2>
-        {applicant.resume ? (
-          <button onClick={() => showToast(`Opening ${applicant.resume}…`)} className="text-sm text-brand-700 hover:underline font-medium">
-            {applicant.resume}
-          </button>
-        ) : (
-          <p className="text-sm text-ink-400">No resume uploaded.</p>
-        )}
+    {applicant.resume ? (
+  <a
+    href={
+      applicant.resume.startsWith("http")
+        ? applicant.resume
+        : `http://localhost:5000/uploads/${applicant.resume.split("/").pop()}`
+    }
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-sm text-brand-700 hover:underline font-medium"
+  >
+    {applicant.resume.split("/").pop()}
+  </a>
+) : (
+  <p className="text-sm text-ink-400">No resume uploaded.</p>
+)}
       </div>
 
       <div className="card overflow-hidden">

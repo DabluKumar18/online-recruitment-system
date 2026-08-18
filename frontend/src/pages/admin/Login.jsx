@@ -75,12 +75,14 @@ export default function AdminLogin() {
         </div>
 
         <div className="mt-5 flex items-start gap-2 text-xs text-ink-300 bg-ink-800 rounded-lg px-3.5 py-3">
-          <Info size={14} className="shrink-0 mt-0.5" />
-          <div>
-            <p className="font-medium text-white mb-1">Demo credentials</p>
-            <p>admin@example.com / admin123</p>
-          </div>
+       <Info size={14} className="shrink-0 mt-0.5" />
+       <div>
+          <p className="font-medium text-white mb-1">
+           Admin Login Credentials
+          </p>
+         <p>admin@recruitment.com / Admin@123456</p>
         </div>
+      </div>
       </div>
     </div>
   );
