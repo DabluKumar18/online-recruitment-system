@@ -35,8 +35,12 @@ export default function Register() {
     setSubmitting(true);
     try {
       const user = await register(form);
-      showToast(`Account created — welcome, ${user.fullName.split(" ")[0]}!`);
-      navigate("/applicant/dashboard");
+
+      showToast(
+       `Account created — welcome, ${user.fullName.split(" ")[0]}!`
+);
+
+navigate("/applicant/dashboard");
     } catch (err) {
       setErrors({ form: err.message });
     } finally {

@@ -671,23 +671,35 @@ export async function loginUser(email, password) {
 }
 
 export async function registerApplicant({ fullName, email, phone, password }) {
-  await delay(400);
-  const users = readStore(KEYS.users, seedUsers);
-  if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-    throw new Error("An account with this email already exists.");
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+    name: fullName,
+    email,
+    phone,
+    password,
+   }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Registration failed");
   }
-  const newUser = { id: generateId("user"), role: "applicant", fullName, email, phone, password };
-  writeStore(KEYS.users, [...users, newUser]);
 
-  const applicants = readStore(KEYS.applicants, seedApplicants);
-  writeStore(KEYS.applicants, [
-    ...applicants,
-    { id: newUser.id, fullName, email, phone, location: "", education: { degree: "", university: "", graduationYear: "" }, experience: "", skills: [], resume: "" },
-  ]);
+  const user = {
+    ...data.user,
+    fullName: data.user.name,
+    phone: phone || "",
+  };
 
-  const { password: _pw, ...safeUser } = newUser;
-  writeStore(KEYS.currentUser, safeUser);
-  return safeUser;
+  localStorage.setItem("token", data.token);
+  writeStore(KEYS.currentUser, user);
+
+  return user;
 }
 
 export function getCurrentUser() {
@@ -701,4 +713,5 @@ export function getCurrentUser() {
 
 export function logoutUser() {
   localStorage.removeItem(KEYS.currentUser);
+  localStorage.removeItem("token");
 }
